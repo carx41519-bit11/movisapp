@@ -37,7 +37,15 @@ async function api(path, data) {
     method: data ? "POST" : "GET",
     body: data ? JSON.stringify(data) : undefined,
   });
-  const out = await r.json();
+  const text = await r.text();
+  let out;
+  try {
+    out = JSON.parse(text);
+  } catch {
+    throw Error(
+      `The server returned an unexpected response (HTTP ${r.status}). Please try again shortly. If this continues, check the Render logs.`,
+    );
+  }
   if (!r.ok) {
     if (r.status === 401) showLogin();
     throw Error(out.error || "Request failed");
@@ -122,7 +130,7 @@ function recognition(p) {
 function productCards(products = state.products) {
   if (!products.length) return '<p class="empty">No rice products match your search.</p>';
   return '<div class="product-grid">' + products.map((p) =>
-    '<article class="rice-card"><div class="rice-card-top"><span class="rice-symbol" aria-hidden="true">▥</span>' + recognition(p) +
+    '<article class="rice-card"><div class="rice-card-top"><span class="rice-symbol" aria-hidden="true">â–¥</span>' + recognition(p) +
     '</div><h3>' + esc(p.name) + '</h3><p class="muted">' + esc(p.sku) +
     '</p><div class="stock-total">' + esc(p.quantity) + ' <span>sacks available</span></div>' +
     '<p class="pack-details">' + esc(p.description || 'Verify pack size in product details.') + '</p>' +
@@ -139,7 +147,7 @@ function scannerPanel() {
     (demo ? 'Results are synthetic. Use the trained backend for real rice recognition.' :
       ready ? 'The server model is ready. Products marked Manual review need checked quantities.' :
       'The server has not confirmed a ready model. Check the backend model configuration.') +
-    '</p><p class="scanner-note">Capture → Check → Record · Reviewing an image never changes stock.</p></div>' +
+    '</p><p class="scanner-note">Capture â†’ Check â†’ Record Â· Reviewing an image never changes stock.</p></div>' +
     '<span class="badge ' + (ready ? 'healthy' : 'pending') + '">' +
     (demo ? 'Demo mode' : ready ? 'Server ready' : 'Needs attention') + '</span></article>';
 }
@@ -190,7 +198,7 @@ function render() {
       [
         "Available sacks",
         state.products.reduce((n, p) => n + p.quantity, 0),
-        state.products.length + " rice products · Stock tracked by sack",
+        state.products.length + " rice products Â· Stock tracked by sack",
       ],
       [
         "Awaiting inspection",
@@ -620,6 +628,9 @@ $("logout").onclick = () =>
   });
 $("login-form").onsubmit = async (e) => {
   e.preventDefault();
+  const button = e.currentTarget.querySelector('button[type="submit"], button');
+  if (button.disabled) return;
+  button.disabled = true;
   $("login-error").textContent = "";
   try {
     await api("/login", {
@@ -627,10 +638,12 @@ $("login-form").onsubmit = async (e) => {
       password: $("password").value,
       client: "web",
     });
-    $("password").value = "";
     await refresh();
+    $("password").value = "";
   } catch (e) {
     $("login-error").textContent = e.message;
+  } finally {
+    button.disabled = false;
   }
 };
 for (const evt of ["pointerdown", "keydown"])
