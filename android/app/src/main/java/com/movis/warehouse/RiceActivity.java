@@ -29,13 +29,16 @@ public class RiceActivity extends Activity {
     private String token="",username="",role="",page="Inventory",actionId="";
     private JSONObject state=new JSONObject(),action=new JSONObject(),pendingImage;
     private boolean busy=false;
+    private final Handler loadingHandler=new Handler(Looper.getMainLooper());
+    private Runnable loadingIndicator;
+    private String updatedAt="";
     interface Work { JSONObject run() throws Exception; }
     interface Reply { void done(JSONObject r) throws Exception; }
     @Override public void onCreate(Bundle saved){super.onCreate(saved);getPreferences(MODE_PRIVATE).edit().remove("server").apply();
         try(InputStream in=getAssets().open("scanner_model.json")){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);expectedModel=new JSONObject(out.toString("UTF-8")).optString("sha256");}catch(Exception ignored){}
         getWindow().setStatusBarColor(PAPER);getWindow().setNavigationBarColor(Color.WHITE);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);login();}
-    @Override protected void onDestroy(){super.onDestroy();worker.shutdownNow();}
+    @Override protected void onDestroy(){super.onDestroy();loadingHandler.removeCallbacksAndMessages(null);worker.shutdownNow();}
     int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     JSONObject obj(Object... parts){JSONObject r=new JSONObject();try{for(int i=0;i<parts.length;i+=2)r.put((String)parts[i],parts[i+1]);}catch(JSONException e){throw new IllegalArgumentException(e);}return r;}
     JSONArray arr(JSONObject o,String key){JSONArray a=o.optJSONArray(key);return a==null?new JSONArray():a;}
@@ -56,7 +59,7 @@ public class RiceActivity extends Activity {
     Button primary(LinearLayout parent,String title,Runnable action){Button b=button(parent,title,action);b.setTextColor(Color.WHITE);b.setBackground(bg(TEAL));return b;}
     EditText field(LinearLayout parent,String title,boolean number){TextView label=txt(title,13);label.setTypeface(Typeface.DEFAULT,Typeface.BOLD);parent.addView(label);EditText e=new EditText(this);e.setSingleLine();e.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(number?10:500)});e.setTextSize(16);e.setTextColor(INK);e.setPadding(dp(14),dp(12),dp(14),dp(12));e.setMinHeight(dp(50));GradientDrawable d=bg(0xfff5f7fa);d.setStroke(dp(1),0xffd9e2e8);e.setBackground(d);e.setInputType(number?InputType.TYPE_CLASS_NUMBER:InputType.TYPE_CLASS_TEXT);e.setContentDescription(title);parent.addView(e,new LinearLayout.LayoutParams(-1,-2));return e;}
     CheckBox check(LinearLayout p,String s,boolean checked){CheckBox c=new CheckBox(this);c.setText(s);c.setTextColor(INK);c.setChecked(checked);p.addView(c);return c;}
-    void error(String s){status.setVisibility(View.VISIBLE);status.setText(s==null?"Request failed":s);status.setTextColor(0xff9c3228);status.setBackgroundColor(0xffffeee9);if(progress!=null)progress.setVisibility(View.GONE);}
+    void error(String s){status.setVisibility(View.VISIBLE);status.setText(s==null?"Request failed":s);status.setTextColor(0xff9c3228);status.setBackgroundColor(0xffffeee9);if(progress!=null)progress.setVisibility(View.INVISIBLE);}
     void shell(String title){
         buttons.clear();root=col();root.setBackgroundColor(PAPER);
         root.setOnApplyWindowInsetsListener((v,in)->{if(Build.VERSION.SDK_INT>=30){Insets bars=in.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());Insets ime=in.getInsets(WindowInsets.Type.ime());v.setPadding(bars.left,bars.top,bars.right,Math.max(bars.bottom,ime.bottom));}else v.setPadding(in.getSystemWindowInsetLeft(),in.getSystemWindowInsetTop(),in.getSystemWindowInsetRight(),in.getSystemWindowInsetBottom());return in;});
@@ -69,7 +72,7 @@ public class RiceActivity extends Activity {
             menu.setOnClickListener(v->{if(busy)return;PopupMenu pm=new PopupMenu(this,menu);pm.getMenu().add("Refresh");pm.getMenu().add("Sign out");pm.setOnMenuItemClickListener(item->{if(item.getTitle().toString().equals("Refresh")){if(actionId.isEmpty())load();else open(actionId);}else new AlertDialog.Builder(this).setTitle("Sign out?").setMessage("Your saved tasks will be available when you sign in again.").setNegativeButton("Stay",null).setPositiveButton("Sign out",(d,w)->signOut()).show();return true;});pm.show();});
         }
         root.addView(header);
-        progress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progress.setIndeterminate(true);progress.setVisibility(View.GONE);root.addView(progress,new LinearLayout.LayoutParams(-1,dp(3)));
+        progress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progress.setIndeterminate(true);progress.setVisibility(View.INVISIBLE);root.addView(progress,new LinearLayout.LayoutParams(-1,dp(3)));
         status=txt("",13);status.setPadding(dp(24),dp(12),dp(24),dp(12));status.setVisibility(View.GONE);status.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);root.addView(status);
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setVerticalScrollBarEnabled(false);body=col();body.setPadding(dp(24),dp(12),dp(24),dp(24));scroll.addView(body);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));setContentView(root);root.requestApplyInsets();
     }
@@ -93,7 +96,7 @@ public class RiceActivity extends Activity {
             Icon icon=new Icon(n,page.equals(n)?TEAL:MUTED);item.addView(icon,new LinearLayout.LayoutParams(dp(23),dp(23)));
             TextView label=txt(n,11);label.setPadding(0,dp(4),0,0);label.setTextColor(page.equals(n)?TEAL:MUTED);label.setTypeface(Typeface.DEFAULT,Typeface.BOLD);item.addView(label);
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(4),0,dp(4),0);nav.addView(item,lp);
-            item.setOnClickListener(v->{if(!busy){actionId="";page=n;load();}});
+            item.setOnClickListener(v->{if(!busy&&!page.equals(n))home(n);});
         }root.addView(nav);
     }
     class Icon extends View{
@@ -116,7 +119,37 @@ public class RiceActivity extends Activity {
         TextView label=txt(ready?"●  Smart counting ready":"●  Smart counting unavailable",13);label.setTextColor(ready?TEAL:0xff9a6220);label.setTypeface(Typeface.DEFAULT,Typeface.BOLD);c.addView(label);
         muted(c,ready?"Magnolia rice · Verify each count before submitting.":"Contact your administrator. You can still enter verified quantities manually.");
     }
-    void task(Work work,Reply reply){if(busy||isDestroyed())return;busy=true;for(Button b:buttons)b.setEnabled(false);status.setVisibility(View.VISIBLE);status.setText("Connecting securely…");status.setBackgroundColor(0xffe8f4f0);status.setTextColor(TEAL);progress.setVisibility(View.VISIBLE);worker.execute(()->{try{JSONObject r=work.run();runOnUiThread(()->{if(isDestroyed())return;busy=false;for(Button b:buttons)b.setEnabled(true);progress.setVisibility(View.GONE);status.setVisibility(View.GONE);try{reply.done(r);}catch(Exception e){error(e.getMessage());}});}catch(Exception e){runOnUiThread(()->{if(isDestroyed())return;busy=false;for(Button b:buttons)b.setEnabled(true);if(e instanceof ApiClient.ApiError&&((ApiClient.ApiError)e).code==401){token="";actionId="";pendingImage=null;state=new JSONObject();action=new JSONObject();keys.clear();login();}error(e.getMessage());});}});}
+    void finishLoading(){
+        if(loadingIndicator!=null)loadingHandler.removeCallbacks(loadingIndicator);
+        loadingIndicator=null;busy=false;
+        for(Button b:buttons)b.setEnabled(true);
+        progress.setVisibility(View.INVISIBLE);
+    }
+    void task(Work work,Reply reply){
+        if(busy||isDestroyed())return;
+        busy=true;for(Button b:buttons)b.setEnabled(false);
+        status.setVisibility(View.GONE);
+        // Short requests complete without flashing a banner or moving the layout.
+        loadingIndicator=()->{if(busy&&!isDestroyed())progress.setVisibility(View.VISIBLE);};
+        loadingHandler.postDelayed(loadingIndicator,350);
+        worker.execute(()->{
+            try{
+                JSONObject r=work.run();
+                runOnUiThread(()->{
+                    if(isDestroyed())return;
+                    finishLoading();
+                    try{reply.done(r);}catch(Exception e){error(e.getMessage());}
+                });
+            }catch(Exception e){runOnUiThread(()->{
+                if(isDestroyed())return;
+                finishLoading();
+                if(e instanceof ApiClient.ApiError&&((ApiClient.ApiError)e).code==401){
+                    token="";actionId="";pendingImage=null;state=new JSONObject();action=new JSONObject();keys.clear();login();
+                }
+                error(e.getMessage());
+            });}
+        });
+    }
     JSONObject api(String path,JSONObject data)throws Exception{return ApiClient.request(path,data,token);}
     JSONObject request(String kind,JSONObject d){String sig=kind+d.toString();String key=keys.get(sig);if(key==null){key=UUID.randomUUID().toString();keys.put(sig,key);}try{d.put("request_id",key);}catch(JSONException ignored){}return d;}
     void login(){
@@ -135,9 +168,9 @@ public class RiceActivity extends Activity {
         });
         p.setOnEditorActionListener((v,id,event)->{if(id==android.view.inputmethod.EditorInfo.IME_ACTION_DONE){submit.performClick();return true;}return false;});
         TextView help=muted(body,"Need access? Contact your warehouse administrator.");help.setGravity(Gravity.CENTER);
-        TextView version=muted(body,"MOVIS 0.8 · Secure warehouse operations");version.setTextSize(11);version.setGravity(Gravity.CENTER);version.setPadding(0,dp(24),0,0);
+        TextView version=muted(body,"MOVIS 0.8.1 · Secure warehouse operations");version.setTextSize(11);version.setGravity(Gravity.CENTER);version.setPadding(0,dp(24),0,0);
     }
-    void load(){task(()->api("/v2/state",null),r->{state=r;home(page);});}
+    void load(){task(()->api("/v2/state",null),r->{state=r;updatedAt=java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"));home(page);});}
     String name(int id){JSONArray p=arr(state,"products");for(int i=0;i<p.length();i++)if(p.optJSONObject(i).optInt("id")==id)return p.optJSONObject(i).optString("name");return "Rice "+id;}
     boolean write(){return role.equals("operator")||role.equals("admin");}
     void home(String tab){
@@ -155,7 +188,7 @@ public class RiceActivity extends Activity {
                 JSONObject item=products.optJSONObject(i);LinearLayout c=card(body);c.setPadding(dp(16),dp(12),dp(16),dp(12));LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout info=col();TextView title=txt(item.optString("name"),17);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);info.addView(title);TextView sku=muted(info,item.optString("sku"));sku.setTextSize(11);row.addView(info,new LinearLayout.LayoutParams(0,-2,1));LinearLayout amounts=col();amounts.setGravity(Gravity.END);TextView qty=txt(String.format(Locale.US,"%,d",item.optInt("quantity")),27);qty.setTypeface(Typeface.DEFAULT,Typeface.BOLD);amounts.addView(qty);TextView sack=muted(amounts,"sacks");sack.setTextSize(11);row.addView(amounts);c.addView(row);
                 if(item.optBoolean("scan_supported")){TextView support=muted(c,"Smart counting");support.setTextColor(TEAL);support.setTextSize(11);}
             }
-            muted(body,"Updated "+java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("h:mm a")));
+            muted(body,"Last refreshed "+updatedAt+" · Account menu → Refresh");
         }else if(tab.equals("Tasks")){
             muted(body,"OPERATIONS");heading(body,"Tasks");muted(body,"Record a movement or continue a saved task.");
             if(write()){
@@ -182,7 +215,11 @@ public class RiceActivity extends Activity {
         bottomNav();
     }
     void start(String kind){LinearLayout f=col();f.setPadding(dp(18),dp(8),dp(18),dp(8));f.addView(txt("Select the rice products included in this action.",15));ArrayList<CheckBox> picks=new ArrayList<>();JSONArray ps=arr(state,"products");for(int i=0;i<ps.length();i++)picks.add(check(f,ps.optJSONObject(i).optString("name")+(ps.optJSONObject(i).optBoolean("scan_supported")?" · smart count":" · manual count"),ps.optJSONObject(i).optBoolean("scan_supported")));AlertDialog d=new AlertDialog.Builder(this).setTitle(label(kind)).setView(f).setNegativeButton("Cancel",null).setPositiveButton("Start",null).create();d.setOnShowListener(v->d.getButton(-1).setOnClickListener(w->{JSONArray ids=new JSONArray();for(int i=0;i<picks.size();i++)if(picks.get(i).isChecked())ids.put(ps.optJSONObject(i).optInt("id"));if(ids.length()==0){error("Choose at least one rice product");return;}d.dismiss();task(()->api("/v2/open",request("open",obj("kind",kind,"products",ids))),r->{keys.entrySet().removeIf(e->e.getKey().startsWith("open"));open(r.optString("action_id"));});}));d.show();}
-    void open(String id){actionId=id;task(()->api("/v2/state?action_id="+URLEncoder.encode(id,"UTF-8")+"&images=1",null),r->{state=r;action=r.getJSONObject("action");actionScreen();});}
+    void open(String id){actionId=id;task(()->api("/v2/state?action_id="+URLEncoder.encode(id,"UTF-8")+"&images=1",null),r->{
+        // Action responses omit dashboard lists. Keep those until the next full refresh.
+        for(String key:new String[]{"products","user","scanner"})if(r.has(key))state.put(key,r.get(key));
+        action=r.getJSONObject("action");actionScreen();
+    });}
     JSONObject base(){return obj("action_id",actionId,"revision",action.optInt("revision"));}
     void actionScreen(){shell(label(action.optString("kind")));heading(body,label(action.optString("kind")));button(body,"‹  Back to tasks",()->onBackPressed());boolean editable=action.optString("state").equals("open");body.addView(txt("Count each sack once. Review quantities before submitting.",14));
         if(pendingImage!=null&&pendingImage.optString("action_id").equals(actionId)&&editable)button(body,"Retry pending image scan",()->sendImage());
