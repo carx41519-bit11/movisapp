@@ -1,11 +1,15 @@
 FROM python:3.12-slim
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8080
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8080 MOVIS_MODE=yolo MOVIS_WEIGHTS=/app/models/best.pt YOLO_CONFIG_DIR=/tmp/movis-yolo MPLCONFIGDIR=/tmp/movis-mpl
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements*.txt ./backend/
-RUN pip install --no-cache-dir -r backend/requirements-cloud.txt && useradd --uid 10001 --create-home movis && mkdir -p /var/data && chown movis:movis /var/data
+RUN pip install --no-cache-dir 'torch>=2.6,<3' 'torchvision>=0.21,<1' --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r backend/requirements-cloud.txt 'ultralytics==8.4.166' && useradd --uid 10001 --create-home movis && mkdir -p /var/data && chown movis:movis /var/data
 COPY backend/ ./backend/
 COPY web/ ./web/
+COPY models/ /app/models/
 USER movis
 WORKDIR /app/backend
 EXPOSE 8080
-CMD ["sh", "-c", "exec gunicorn 'webapp:create_app()' --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -"]
+CMD ["sh", "-c", "exec gunicorn 'webapp:create_app()' --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 4 --timeout 180 --access-logfile - --error-logfile -"]
+
