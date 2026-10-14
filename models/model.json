@@ -1,7 +1,7 @@
 {
   "name": "Magnolia Rice YOLO26n",
   "file": "best.pt",
-  "sha256": "43e6da5c87ecb697cef7878abcb8aa17133ab40a8b1cabf08c00baf770e80810",
+  "sha256": "b9d4bddf0a595c9a597990435c9f204b041d2e49888f04ce4cac8af8056fb33f",
   "classes": [
     "magnoliaRice"
   ],
