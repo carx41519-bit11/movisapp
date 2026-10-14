@@ -1,0 +1,11 @@
+.neon
+node_modules/
+.env.local
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+*.db
+work/
