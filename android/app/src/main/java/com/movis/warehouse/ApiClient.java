@@ -17,12 +17,20 @@ final class ApiClient {
     }
 
     static JSONObject request(String path, JSONObject data, String token) throws Exception {
+        return request(path,data,token,"");
+    }
+
+    static JSONObject request(String path, JSONObject data, String token, String knownImages) throws Exception {
         if (!path.startsWith("/") || path.startsWith("//")) throw new IOException("Invalid request path");
         HttpURLConnection c = (HttpURLConnection) new URL(SERVER + path).openConnection();
         c.setInstanceFollowRedirects(false);
         c.setConnectTimeout(path.equals("/logout") ? 5000 : 20000);
         c.setReadTimeout(path.equals("/logout") ? 5000 : 90000);
         c.setRequestProperty("Accept", "application/json");
+        if(path.startsWith("/v2/")){
+            if(data!=null)c.setRequestProperty("X-Movis-State", "action");
+            if(!knownImages.isEmpty())c.setRequestProperty("X-Movis-Known-Images",knownImages);
+        }
         if (!token.isEmpty()) c.setRequestProperty("Authorization", "Bearer " + token);
         try {
             if (data != null) {

@@ -101,7 +101,7 @@ class RiceWorkflow:
             rows.append({'product_id': pid, 'quantity': row['quantity'], 'version': row['version']})
         return rows
 
-    def state(self, user, aid=None, include_images=False):
+    def state(self, user, aid=None, include_images=False, known_images=()):
         with self.s.connection() as c:
             access = self.account(c, user)
             result = {'mode': self.s.mode, 'user': {**user, **access},
@@ -117,7 +117,7 @@ class RiceWorkflow:
                 images = []
                 for r in c.execute('SELECT * FROM rice_images WHERE action_id=? ORDER BY id', (aid,)):
                     row = dict(r)
-                    if not include_images:
+                    if not include_images or (row['id'] in known_images and not row['deleted']):
                         row.pop('image')
                     else:
                         row['image'] = '' if row['deleted'] else self.images.get(row['image'])
