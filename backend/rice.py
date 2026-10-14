@@ -20,6 +20,8 @@ KINDS = ('stock-in', 'stock-out', 'count', 'return', 'damage')
 class RiceWorkflow:
     def __init__(self, service):
         self.s = service
+        from object_storage import ImageStorage
+        self.images = ImageStorage()
         with service.connection() as c:
             c.execute('BEGIN IMMEDIATE')
             c.executescript(Path(__file__).with_name('rice_schema.sql').read_text())
@@ -117,6 +119,8 @@ class RiceWorkflow:
                     row = dict(r)
                     if not include_images:
                         row.pop('image')
+                    else:
+                        row['image'] = '' if row['deleted'] else self.images.get(row['image'])
                     row.pop('image_hash')
                     row['raw'], row['checked'] = json.loads(row['raw']), json.loads(row['checked'])
                     images.append(row)
@@ -179,6 +183,7 @@ class RiceWorkflow:
             if not raw or len(raw) > 6 * 1024 * 1024:
                 raise Error('Image must be between 1 byte and 6 MB')
             with Image.open(BytesIO(raw)) as src:
+                content_type = Image.MIME.get(src.format, 'application/octet-stream')
                 if src.width * src.height > 20000000:
                     raise Error('Image exceeds 20 megapixels')
                 picture = ImageOps.exif_transpose(src).convert('RGB')
@@ -200,7 +205,8 @@ class RiceWorkflow:
             else:
                 if c.execute('SELECT count(*) FROM rice_images WHERE action_id=? AND deleted=0', (aid,)).fetchone()[0] >= 40:
                     raise Error('Maximum 40 kept images per action')
-                c.execute('INSERT INTO rice_images(id,action_id,image,image_hash,raw,processing_ms,model_version) VALUES(?,?,?,?,?,?,?)', (iid, aid, data['image'], ihash, '[]', '0', 'processing'))
+                stored = self.images.put(aid, iid, raw, content_type)
+                c.execute('INSERT INTO rice_images(id,action_id,image,image_hash,raw,processing_ms,model_version) VALUES(?,?,?,?,?,?,?)', (iid, aid, stored, ihash, '[]', '0', 'processing'))
                 c.execute('UPDATE rice_actions SET revision=revision+1 WHERE id=?', (aid,))
             products = [dict(r) for r in c.execute('SELECT * FROM rice_products')]
         start = time.perf_counter()
@@ -260,7 +266,11 @@ class RiceWorkflow:
             if not row or row['deleted']:
                 raise Error('Image is unavailable', 409)
             if delete:
-                c.execute('UPDATE rice_images SET deleted=1,reviewed=0,image=? WHERE id=?', ('', row['id']))
+                # Keep the object reference until deletion succeeds; a retried
+                # request can finish cleanup after the database commit.
+                from object_storage import PREFIX
+                retained = row['image'] if row['image'].startswith(PREFIX) else ''
+                c.execute('UPDATE rice_images SET deleted=1,reviewed=0,image=? WHERE id=?', (retained, row['id']))
             else:
                 if row['model_version'] in ('processing', 'failed'):
                     raise Error('Image must finish processing before review')
@@ -272,7 +282,13 @@ class RiceWorkflow:
             return self.save(c, key, digest, {'message': 'Deleted' if delete else 'Checked quantities saved; stock unchanged'})
 
     def delete(self, user, data):
-        return self.edit(user, data, True)
+        result = self.edit(user, data, True)
+        with self.s.connection() as c:
+            row = c.execute('SELECT image FROM rice_images WHERE id=? AND action_id=? AND deleted=1',
+                            (data['image_id'], data['action_id'])).fetchone()
+        if row:
+            self.images.delete(row['image'])
+        return result
 
     def review(self, user, data):
         return self.edit(user, data)

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/python.mjs backend/run.py",
+    "test": "node scripts/python.mjs -m unittest discover -s backend",
+    "test:neon": "node scripts/python.mjs backend/test_neon_e2e.py"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.1",
+    "@neon/env": "^1.6.2"
+  }
+}

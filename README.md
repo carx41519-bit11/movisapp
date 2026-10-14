@@ -1,5 +1,7 @@
 # MOVIS 0.7.0 — Magnolia YOLO Android update
 
+Neon PostgreSQL and private scan-image storage setup: [deploy/NEON.md](deploy/NEON.md).
+
 The Android staff interface has been rebuilt with a rice inventory summary,
 product cards, transaction cards, a camera screen, annotated quantity review,
 inspection status and movement history. Inventory is tracked by product without

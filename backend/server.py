@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import logging
+import os
 import sqlite3
 import threading
 import time
@@ -38,8 +39,10 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    from environment import load_environment
+    load_environment()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--db',default='movis.db')
+    parser.add_argument('--db',default=os.environ.get('DATABASE_URL', 'movis.db'))
     parser.add_argument('--host',default='127.0.0.1')
     parser.add_argument('--port',type=int,default=8080)
     from model_store import configured_mode, prepare_weights
@@ -48,7 +51,6 @@ def main():
     parser.add_argument('--init',action='store_true')
     parser.add_argument('--seed-demo',action='store_true')
     args = parser.parse_args()
-    import os
     os.environ['MOVIS_MODE'] = args.mode
     service = Service(args.db,args.mode,args.weights or prepare_weights())
     if args.init:
