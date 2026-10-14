@@ -143,21 +143,60 @@ class Application:
 
 def create_app():
     """Existing databases are kept. A fresh database requires private admin credentials."""
-    db=os.environ.get('DATABASE_URL')
-    if db and not db.startswith(('postgres://','postgresql://')):
-        raise RuntimeError('DATABASE_URL must be a PostgreSQL connection URL')
-    if not db:
-        if os.environ.get('MOVIS_HTTPS_HOSTING')=='1' and not os.environ.get('MOVIS_DB_PATH'):
-            raise RuntimeError('Hosted service requires DATABASE_URL or an explicit persistent MOVIS_DB_PATH')
-        db=Path(os.environ.get('MOVIS_DB_PATH','movis.db'))
-        db.parent.mkdir(parents=True,exist_ok=True)
-    from model_store import prepare_weights, configured_mode
-    service=Service(db,configured_mode(),prepare_weights())
-    with service.connection() as con:count=con.execute('SELECT count(*) FROM users').fetchone()[0]
-    if not count:
-        username=os.environ.get('MOVIS_ADMIN_USERNAME','').strip()
-        password=os.environ.get('MOVIS_ADMIN_PASSWORD','')
-        if not username or len(password)<12 or password=='movis-demo-2026':
-            raise RuntimeError('First startup requires MOVIS_ADMIN_USERNAME and a new MOVIS_ADMIN_PASSWORD (12+ characters). Do not use the public demo password.')
-        service.bootstrap(username,password,demo=os.environ.get('MOVIS_SEED_DEMO')=='1')
-    return Application(service)
+    import faulthandler
+
+    faulthandler.enable()
+    faulthandler.dump_traceback_later(60, repeat=True)
+
+    try:
+        print("MOVIS: application startup started", flush=True)
+
+        db = os.environ.get('DATABASE_URL')
+        if db and not db.startswith(('postgres://', 'postgresql://')):
+            raise RuntimeError('DATABASE_URL must be a PostgreSQL connection URL')
+
+        if not db:
+            if os.environ.get('MOVIS_HTTPS_HOSTING') == '1' and not os.environ.get('MOVIS_DB_PATH'):
+                raise RuntimeError(
+                    'Hosted service requires DATABASE_URL or an explicit persistent MOVIS_DB_PATH'
+                )
+            db = Path(os.environ.get('MOVIS_DB_PATH', 'movis.db'))
+            db.parent.mkdir(parents=True, exist_ok=True)
+
+        from model_store import prepare_weights, configured_mode
+
+        print("MOVIS: checking model file", flush=True)
+        mode = configured_mode()
+        weights = prepare_weights()
+
+        print("MOVIS: loading service, model and database", flush=True)
+        service = Service(db, mode, weights)
+
+        print("MOVIS: checking database users", flush=True)
+        with service.connection() as con:
+            count = con.execute('SELECT count(*) FROM users').fetchone()[0]
+
+        if not count:
+            print("MOVIS: creating initial administrator", flush=True)
+            username = os.environ.get('MOVIS_ADMIN_USERNAME', '').strip()
+            password = os.environ.get('MOVIS_ADMIN_PASSWORD', '')
+
+            if not username or len(password) < 12 or password == 'movis-demo-2026':
+                raise RuntimeError(
+                    'First startup requires MOVIS_ADMIN_USERNAME and a new '
+                    'MOVIS_ADMIN_PASSWORD (12+ characters). '
+                    'Do not use the public demo password.'
+                )
+
+            service.bootstrap(
+                username,
+                password,
+                demo=os.environ.get('MOVIS_SEED_DEMO') == '1',
+            )
+
+        app = Application(service)
+        print("MOVIS: application startup completed", flush=True)
+        return app
+
+    finally:
+        faulthandler.cancel_dump_traceback_later()
