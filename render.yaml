@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: movis
+    runtime: docker
+    dockerfilePath: ./Dockerfile.yolo
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: MOVIS_ADMIN_USERNAME
+        sync: false
+      - key: MOVIS_ADMIN_PASSWORD
+        sync: false
+      - key: MOVIS_MODE
+        value: yolo
+      - key: MOVIS_SEED_DEMO
+        value: "0"
+      - key: MOVIS_HTTPS_HOSTING
+        value: "1"
+      - key: MOVIS_WEIGHTS
+        value: /app/models/best.pt
+      - key: MOVIS_WEIGHTS_SHA256
+        value: 43e6da5c87ecb697cef7878abcb8aa17133ab40a8b1cabf08c00baf770e80810

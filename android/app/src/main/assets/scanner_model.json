@@ -1,0 +1,11 @@
+{
+  "name": "Magnolia Rice YOLO26n",
+  "file": "best.pt",
+  "sha256": "43e6da5c87ecb697cef7878abcb8aa17133ab40a8b1cabf08c00baf770e80810",
+  "classes": [
+    "magnoliaRice"
+  ],
+  "confidence": 0.35,
+  "execution": "backend",
+  "training_epochs": 50
+}

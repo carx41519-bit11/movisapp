@@ -1,0 +1,2 @@
+-r requirements-cloud.txt
+ultralytics==8.4.166

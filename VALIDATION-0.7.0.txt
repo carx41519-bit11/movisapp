@@ -1,0 +1,128 @@
+test_bad_payload_and_conflict_status (test_http.HttpTests.test_bad_payload_and_conflict_status) ... ok
+test_health_and_unauthorized_inventory (test_http.HttpTests.test_health_and_unauthorized_inventory) ... ok
+test_login_inventory_csv_and_logout (test_http.HttpTests.test_login_inventory_csv_and_logout) ... ok
+test_two_clients_share_scans_edits_and_returns (test_http.HttpTests.test_two_clients_share_scans_edits_and_returns) ... ok
+test_web_dashboard_assets_and_path_restriction (test_http.HttpTests.test_web_dashboard_assets_and_path_restriction) ... ok
+test_checksum_and_https_are_required (test_model_store.ModelStoreTests.test_checksum_and_https_are_required) ... ok
+test_demo_never_downloads_weights (test_model_store.ModelStoreTests.test_demo_never_downloads_weights) ... ok
+test_embedded_file_with_checksum (test_model_store.ModelStoreTests.test_embedded_file_with_checksum) ... ok
+test_verified_download_is_atomic_and_tampering_rejected (test_model_store.ModelStoreTests.test_verified_download_is_atomic_and_tampering_rejected) ... ok
+test_adjustment_history_and_exact_retry (test_postgres.PostgresInventoryTests.test_adjustment_history_and_exact_retry) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_catalog_accepts_future_training_classes (test_postgres.PostgresInventoryTests.test_catalog_accepts_future_training_classes) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_concurrent_photo_adds_preserve_both_receipts (test_postgres.PostgresInventoryTests.test_concurrent_photo_adds_preserve_both_receipts) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_concurrent_restock_is_once (test_postgres.PostgresInventoryTests.test_concurrent_restock_is_once) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_concurrent_scans_only_one_commits (test_postgres.PostgresInventoryTests.test_concurrent_scans_only_one_commits) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_damaged_goods_cannot_be_restocked (test_postgres.PostgresInventoryTests.test_damaged_goods_cannot_be_restocked) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_hosted_factory_and_session_survive_restart (test_postgres.PostgresInventoryTests.test_hosted_factory_and_session_survive_restart) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_idempotency_key_cannot_be_repurposed (test_postgres.PostgresInventoryTests.test_idempotency_key_cannot_be_repurposed) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_invalid_images_and_quantities (test_postgres.PostgresInventoryTests.test_invalid_images_and_quantities) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_legacy_password_upgrade_preserves_account (test_postgres.PostgresInventoryTests.test_legacy_password_upgrade_preserves_account) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_login_and_expired_session (test_postgres.PostgresInventoryTests.test_login_and_expired_session) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_malformed_images_and_quantity_overflow_are_rejected (test_postgres.PostgresInventoryTests.test_malformed_images_and_quantity_overflow_are_rejected) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_manual_change_and_stale_write_and_retry (test_postgres.PostgresInventoryTests.test_manual_change_and_stale_write_and_retry) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_migration_preserves_data_and_resets_sequences (test_postgres.PostgresInventoryTests.test_migration_preserves_data_and_resets_sequences) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_new_account_password_whitespace_is_preserved (test_postgres.PostgresInventoryTests.test_new_account_password_whitespace_is_preserved) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_partial_count_and_unconfirmed_rejected (test_postgres.PostgresInventoryTests.test_partial_count_and_unconfirmed_rejected) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_photo_add_retry_and_new_key_cannot_duplicate (test_postgres.PostgresInventoryTests.test_photo_add_retry_and_new_key_cannot_duplicate) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_photo_addition_is_additive_and_editable (test_postgres.PostgresInventoryTests.test_photo_addition_is_additive_and_editable) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_rate_limit_survives_service_restart (test_postgres.PostgresInventoryTests.test_rate_limit_survives_service_restart) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_restock_invalidates_old_scan (test_postgres.PostgresInventoryTests.test_restock_invalidates_old_scan) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_return_creation_retry_is_once (test_postgres.PostgresInventoryTests.test_return_creation_retry_is_once) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_return_requires_inspection_and_explicit_restock (test_postgres.PostgresInventoryTests.test_return_requires_inspection_and_explicit_restock) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_same_scan_cannot_be_committed_twice (test_postgres.PostgresInventoryTests.test_same_scan_cannot_be_committed_twice) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_scan_cannot_switch_from_addition_to_reconciliation (test_postgres.PostgresInventoryTests.test_scan_cannot_switch_from_addition_to_reconciliation) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_scan_is_synthetic_and_does_not_mutate_stock (test_postgres.PostgresInventoryTests.test_scan_is_synthetic_and_does_not_mutate_stock) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_server_idle_expiry_and_old_session_compatibility (test_postgres.PostgresInventoryTests.test_server_idle_expiry_and_old_session_compatibility) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_unconfirmed_or_invalid_photo_add_is_atomic (test_postgres.PostgresInventoryTests.test_unconfirmed_or_invalid_photo_add_is_atomic) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_viewer_cannot_mutate_and_operator_cannot_manage (test_postgres.PostgresInventoryTests.test_viewer_cannot_mutate_and_operator_cannot_manage) ... skipped 'Set MOVIS_TEST_DATABASE_URL to a disposable PostgreSQL database'
+test_custom_index_is_not_silently_discarded (test_remove_locations.RemoveLocationsTests.test_custom_index_is_not_silently_discarded) ... ok
+test_existing_rice_balance_and_evidence_are_not_reseeded (test_remove_locations.RemoveLocationsTests.test_existing_rice_balance_and_evidence_are_not_reseeded) ... ok
+test_merge_preserves_history_foreign_keys_and_backup (test_remove_locations.RemoveLocationsTests.test_merge_preserves_history_foreign_keys_and_backup) ... ok
+test_missing_source_does_not_create_a_database (test_remove_locations.RemoveLocationsTests.test_missing_source_does_not_create_a_database) ... ok
+test_old_partial_scan_cannot_replace_combined_stock (test_remove_locations.RemoveLocationsTests.test_old_partial_scan_cannot_replace_combined_stock) ... ok
+test_overflow_rolls_back_without_losing_original_data (test_remove_locations.RemoveLocationsTests.test_overflow_rolls_back_without_losing_original_data) ... ok
+test_startup_requires_migration_and_rerun_is_safe (test_remove_locations.RemoveLocationsTests.test_startup_requires_migration_and_rerun_is_safe) ... ok
+test_unexpected_foreign_key_dependency_rolls_back (test_remove_locations.RemoveLocationsTests.test_unexpected_foreign_key_dependency_rolls_back) ... ok
+test_atomic_rollback_if_required_history_fails (test_rice.RiceTests.test_atomic_rollback_if_required_history_fails) ... ok
+test_complete_reports_preserve_raw_data_and_restrict_staff (test_rice.RiceTests.test_complete_reports_preserve_raw_data_and_restrict_staff) ... ok
+test_concurrent_stock_out_and_request_retry (test_rice.RiceTests.test_concurrent_stock_out_and_request_retry) ... ok
+test_count_save_finish_and_permission_then_adjust (test_rice.RiceTests.test_count_save_finish_and_permission_then_adjust) ... ok
+test_failed_scan_can_retry_and_retain_original_results (test_rice.RiceTests.test_failed_scan_can_retry_and_retain_original_results) ... ok
+test_image_retry_immutability_and_late_deleted_result (test_rice.RiceTests.test_image_retry_immutability_and_late_deleted_result) ... ok
+test_inactive_account_and_staff_privacy (test_rice.RiceTests.test_inactive_account_and_staff_privacy) ... ok
+test_incomplete_no_images_unchecked_and_invalid_quantities (test_rice.RiceTests.test_incomplete_no_images_unchecked_and_invalid_quantities) ... ok
+test_manual_checked_entries_require_reasons_and_matching_products (test_rice.RiceTests.test_manual_checked_entries_require_reasons_and_matching_products) ... ok
+test_multiple_images_deleted_excluded_and_retry (test_rice.RiceTests.test_multiple_images_deleted_excluded_and_retry) ... ok
+test_partial_decision_inspection_and_overflow (test_rice.RiceTests.test_partial_decision_inspection_and_overflow) ... ok
+test_return_damage_stock_matrix_and_owner_only (test_rice.RiceTests.test_return_damage_stock_matrix_and_owner_only) ... ok
+test_stale_baseline_before_finish_and_after_finish (test_rice.RiceTests.test_stale_baseline_before_finish_and_after_finish) ... ok
+test_stock_out_all_or_nothing (test_rice.RiceTests.test_stock_out_all_or_nothing) ... ok
+test_v2_http_staff_web_restriction_and_legacy_disabled (test_rice.RiceTests.test_v2_http_staff_web_restriction_and_legacy_disabled) ... ok
+test_zero_requires_physical_confirmation (test_rice.RiceTests.test_zero_requires_physical_confirmation) ... ok
+test_atomic_rollback_if_required_history_fails (test_rice_postgres.RicePostgresTests.test_atomic_rollback_if_required_history_fails) ... skipped 'Disposable PostgreSQL database not configured'
+test_complete_reports_preserve_raw_data_and_restrict_staff (test_rice_postgres.RicePostgresTests.test_complete_reports_preserve_raw_data_and_restrict_staff) ... skipped 'Disposable PostgreSQL database not configured'
+test_concurrent_stock_out_and_request_retry (test_rice_postgres.RicePostgresTests.test_concurrent_stock_out_and_request_retry) ... skipped 'Disposable PostgreSQL database not configured'
+test_count_save_finish_and_permission_then_adjust (test_rice_postgres.RicePostgresTests.test_count_save_finish_and_permission_then_adjust) ... skipped 'Disposable PostgreSQL database not configured'
+test_failed_scan_can_retry_and_retain_original_results (test_rice_postgres.RicePostgresTests.test_failed_scan_can_retry_and_retain_original_results) ... skipped 'Disposable PostgreSQL database not configured'
+test_image_retry_immutability_and_late_deleted_result (test_rice_postgres.RicePostgresTests.test_image_retry_immutability_and_late_deleted_result) ... skipped 'Disposable PostgreSQL database not configured'
+test_inactive_account_and_staff_privacy (test_rice_postgres.RicePostgresTests.test_inactive_account_and_staff_privacy) ... skipped 'Disposable PostgreSQL database not configured'
+test_incomplete_no_images_unchecked_and_invalid_quantities (test_rice_postgres.RicePostgresTests.test_incomplete_no_images_unchecked_and_invalid_quantities) ... skipped 'Disposable PostgreSQL database not configured'
+test_manual_checked_entries_require_reasons_and_matching_products (test_rice_postgres.RicePostgresTests.test_manual_checked_entries_require_reasons_and_matching_products) ... skipped 'Disposable PostgreSQL database not configured'
+test_multiple_images_deleted_excluded_and_retry (test_rice_postgres.RicePostgresTests.test_multiple_images_deleted_excluded_and_retry) ... skipped 'Disposable PostgreSQL database not configured'
+test_new_workflow_migration_preserves_images_balances_and_outcomes (test_rice_postgres.RicePostgresTests.test_new_workflow_migration_preserves_images_balances_and_outcomes) ... skipped 'Disposable PostgreSQL database not configured'
+test_partial_decision_inspection_and_overflow (test_rice_postgres.RicePostgresTests.test_partial_decision_inspection_and_overflow) ... skipped 'Disposable PostgreSQL database not configured'
+test_return_damage_stock_matrix_and_owner_only (test_rice_postgres.RicePostgresTests.test_return_damage_stock_matrix_and_owner_only) ... skipped 'Disposable PostgreSQL database not configured'
+test_stale_baseline_before_finish_and_after_finish (test_rice_postgres.RicePostgresTests.test_stale_baseline_before_finish_and_after_finish) ... skipped 'Disposable PostgreSQL database not configured'
+test_stock_out_all_or_nothing (test_rice_postgres.RicePostgresTests.test_stock_out_all_or_nothing) ... skipped 'Disposable PostgreSQL database not configured'
+test_v2_http_staff_web_restriction_and_legacy_disabled (test_rice_postgres.RicePostgresTests.test_v2_http_staff_web_restriction_and_legacy_disabled) ... skipped 'Disposable PostgreSQL database not configured'
+test_zero_requires_physical_confirmation (test_rice_postgres.RicePostgresTests.test_zero_requires_physical_confirmation) ... skipped 'Disposable PostgreSQL database not configured'
+test_adjustment_history_and_exact_retry (test_service.InventoryTests.test_adjustment_history_and_exact_retry) ... ok
+test_catalog_accepts_future_training_classes (test_service.InventoryTests.test_catalog_accepts_future_training_classes) ... ok
+test_concurrent_photo_adds_preserve_both_receipts (test_service.InventoryTests.test_concurrent_photo_adds_preserve_both_receipts) ... ok
+test_concurrent_restock_is_once (test_service.InventoryTests.test_concurrent_restock_is_once) ... ok
+test_concurrent_scans_only_one_commits (test_service.InventoryTests.test_concurrent_scans_only_one_commits) ... ok
+test_damaged_goods_cannot_be_restocked (test_service.InventoryTests.test_damaged_goods_cannot_be_restocked) ... ok
+test_idempotency_key_cannot_be_repurposed (test_service.InventoryTests.test_idempotency_key_cannot_be_repurposed) ... ok
+test_invalid_images_and_quantities (test_service.InventoryTests.test_invalid_images_and_quantities) ... ok
+test_legacy_password_upgrade_preserves_account (test_service.InventoryTests.test_legacy_password_upgrade_preserves_account) ... ok
+test_login_and_expired_session (test_service.InventoryTests.test_login_and_expired_session) ... ok
+test_malformed_images_and_quantity_overflow_are_rejected (test_service.InventoryTests.test_malformed_images_and_quantity_overflow_are_rejected) ... ok
+test_manual_change_and_stale_write_and_retry (test_service.InventoryTests.test_manual_change_and_stale_write_and_retry) ... ok
+test_new_account_password_whitespace_is_preserved (test_service.InventoryTests.test_new_account_password_whitespace_is_preserved) ... ok
+test_partial_count_and_unconfirmed_rejected (test_service.InventoryTests.test_partial_count_and_unconfirmed_rejected) ... ok
+test_photo_add_retry_and_new_key_cannot_duplicate (test_service.InventoryTests.test_photo_add_retry_and_new_key_cannot_duplicate) ... ok
+test_photo_addition_is_additive_and_editable (test_service.InventoryTests.test_photo_addition_is_additive_and_editable) ... ok
+test_rate_limit_survives_service_restart (test_service.InventoryTests.test_rate_limit_survives_service_restart) ... ok
+test_restock_invalidates_old_scan (test_service.InventoryTests.test_restock_invalidates_old_scan) ... ok
+test_return_creation_retry_is_once (test_service.InventoryTests.test_return_creation_retry_is_once) ... ok
+test_return_requires_inspection_and_explicit_restock (test_service.InventoryTests.test_return_requires_inspection_and_explicit_restock) ... ok
+test_same_scan_cannot_be_committed_twice (test_service.InventoryTests.test_same_scan_cannot_be_committed_twice) ... ok
+test_scan_cannot_switch_from_addition_to_reconciliation (test_service.InventoryTests.test_scan_cannot_switch_from_addition_to_reconciliation) ... ok
+test_scan_is_synthetic_and_does_not_mutate_stock (test_service.InventoryTests.test_scan_is_synthetic_and_does_not_mutate_stock) ... ok
+test_server_idle_expiry_and_old_session_compatibility (test_service.InventoryTests.test_server_idle_expiry_and_old_session_compatibility) ... ok
+test_unconfirmed_or_invalid_photo_add_is_atomic (test_service.InventoryTests.test_unconfirmed_or_invalid_photo_add_is_atomic) ... ok
+test_viewer_cannot_mutate_and_operator_cannot_manage (test_service.InventoryTests.test_viewer_cannot_mutate_and_operator_cannot_manage) ... ok
+test_cross_origin_post_blocked_and_permissions_header (test_webapp.CloudTests.test_cross_origin_post_blocked_and_permissions_header) ... ok
+test_factory_never_reinitializes_existing_database (test_webapp.CloudTests.test_factory_never_reinitializes_existing_database) ... ok
+test_fresh_factory_requires_private_password (test_webapp.CloudTests.test_fresh_factory_requires_private_password) ... ok
+test_headers_invalid_quantities_and_stale_conflict (test_webapp.CloudTests.test_headers_invalid_quantities_and_stale_conflict) ... ok
+test_login_rate_limit (test_webapp.CloudTests.test_login_rate_limit) ... ok
+test_password_change_requires_password_and_revokes_all_devices (test_webapp.CloudTests.test_password_change_requires_password_and_revokes_all_devices) ... ok
+test_revoke_is_scoped_to_own_account_and_rate_limited (test_webapp.CloudTests.test_revoke_is_scoped_to_own_account_and_rate_limited) ... ok
+test_session_restore_and_expiry (test_webapp.CloudTests.test_session_restore_and_expiry) ... ok
+test_static_assets_health_and_auth (test_webapp.CloudTests.test_static_assets_health_and_auth) ... ok
+test_web_cookie_is_httponly_and_android_bearer_is_compatible (test_webapp.CloudTests.test_web_cookie_is_httponly_and_android_bearer_is_compatible) ... ok
+test_write_persists_after_restart_and_logout_revokes (test_webapp.CloudTests.test_write_persists_after_restart_and_logout_revokes) ... ok
+test_bundled_weights_are_used_when_no_private_path_is_set (test_yolo_integration.MagnoliaIntegrationTests.test_bundled_weights_are_used_when_no_private_path_is_set) ... ok
+test_four_products_can_be_reviewed_and_admin_updated (test_yolo_integration.MagnoliaIntegrationTests.test_four_products_can_be_reviewed_and_admin_updated) ... ok
+test_model_identity_and_existing_products_are_preserved (test_yolo_integration.MagnoliaIntegrationTests.test_model_identity_and_existing_products_are_preserved) ... ok
+test_real_photo_review_and_atomic_submission (test_yolo_integration.MagnoliaIntegrationTests.test_real_photo_review_and_atomic_submission) ... ok
+
+----------------------------------------------------------------------
+Ran 119 tests in 120.632s
+
+OK (skipped=45)
+
+APK: version 0.7.0 (7); package com.movis.warehouse; min SDK 26; target SDK 35.
+APK v2/v3 signature and ZIP alignment passed.
+No hosted deployment or physical-phone test was performed.
