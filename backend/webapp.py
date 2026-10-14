@@ -43,7 +43,7 @@ class Application:
         if method=='GET' and path=='/health':
             # Also verifies that persistent storage is readable.
             with self.service.connection() as con:con.execute('SELECT count(*) FROM users').fetchone()
-            return 200,{'status':'ok','mode':self.service.mode,'version':'0.7.0'},'application/json'
+            return 200,{'status':'ok','mode':self.service.mode,'version':'0.8.2'},'application/json'
         if method not in ['GET','POST']:raise Error('Method not allowed',405)
         data={}
         if method=='POST':
@@ -72,15 +72,26 @@ class Application:
         if method=='POST' and path=='/account/security':
             return 200,self.service.account_security(user,data),'application/json'
         if path.startswith('/v2/'):
+            # Image IDs are immutable; clients may retain their bytes within this session.
+            known_images=environ.get('HTTP_X_MOVIS_KNOWN_IMAGES','').split(',')[:40]
             if method=='GET' and path=='/v2/report':
                 query=parse_qs(environ.get('QUERY_STRING',''))
                 return 200,self.service.rice.report(user,query.get('kind',['history'])[0]),'application/json'
             if method=='GET' and path=='/v2/state':
                 query=parse_qs(environ.get('QUERY_STRING',''))
-                return 200,self.service.rice.state(user,query.get('action_id',[None])[0],query.get('images')==['1']),'application/json'
+                return 200,self.service.rice.state(user,query.get('action_id',[None])[0],query.get('images')==['1'],known_images),'application/json'
             actions={name:getattr(self.service.rice,name.replace('-', '_')) for name in ('open','image','review','delete','refresh-count','finish','submit','adjust','decision','users','product')}
             if method=='POST' and path[4:] in actions:
-                return 200,actions[path[4:]](user,data),'application/json'
+                result=actions[path[4:]](user,data)
+                if environ.get('HTTP_X_MOVIS_STATE')=='action' and path[4:] in ('open','image','review','delete','refresh-count','finish','submit','adjust'):
+                    aid=result.get('action_id') or data.get('action_id')
+                    if aid:
+                        try:
+                            result={**result,'action_state':self.service.rice.state(user,aid,True,known_images)}
+                        except Exception:
+                            # The mutation has committed. Return its receipt even if refreshing fails.
+                            logging.exception('Unable to include action state in mutation receipt')
+                return 200,result,'application/json'
             raise Error('Endpoint not found',404)
         if method=='POST' and path in ('/scans','/scan-additions','/manual-adjustments','/adjustments','/returns','/catalog') or (method=='POST' and path.startswith('/returns/')):
             raise Error('Use the updated MOVIS workflow. Legacy stock actions are disabled.',410)

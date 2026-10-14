@@ -1,0 +1,5 @@
+<resources>
+    <style name="MovisTheme" parent="MovisBase">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>
