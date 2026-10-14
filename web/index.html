@@ -14,18 +14,17 @@
         <a class="brand" href="/"><span class="brand-mark">M</span>MOVIS</a>
         <div class="login-copy">
           <p class="eyebrow">ELDER JAY RICE MILL</p>
-          <h1>Rice inventory.<br />Every sack accounted for.</h1>
+          <h1>Rice inventory,<br />clearly counted.</h1>
           <p>
-            Manage stock, review staff counts, and approve return and damage
-            decisions.
+            Capture. Check. Record.
+            Review verified rice movements and make every owner decision in one place.
           </p>
-        </div>
         </div>
       </div>
       <div class="login-panel">
         <form id="login-form">
           <p class="eyebrow">ADMINISTRATOR WORKSPACE</p>
-          <h2>Sign in to MOVIS</h2>
+          <h2>Welcome back</h2>
           <label for="username">Username</label
           ><input
             id="username"
@@ -52,10 +51,10 @@
         ><span class="sidebar-sub">ELDER JAY RICE MILL</span>
         <nav aria-label="Main navigation">
           <button class="nav active" data-page="overview">Overview</button
-          ><button class="nav" data-page="inventory">Rice products</button
-          ><button class="nav" data-page="actions">Scans and counts</button
+          ><button class="nav" data-page="inventory">Inventory</button
+          ><button class="nav" data-page="actions">Actions and scans</button
           ><button class="nav" data-page="cases">Returns and damage</button
-          ><button class="nav" data-page="history">Stock history</button
+          ><button class="nav" data-page="history">Recent movements</button
           ><button class="nav" data-page="reports">Reports</button
           ><button class="nav" data-page="accounts">Accounts</button
           ><button class="nav" data-page="security">Account security</button>
@@ -81,7 +80,7 @@
           model is required for real scanning.
         </div>
         <p id="app-error" class="error" role="alert"></p>
-        <section id="content"></section>
+        <section id="content" aria-label="Workspace"></section>
       </main>
     </div>
     <dialog id="detail">

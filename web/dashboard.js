@@ -114,11 +114,41 @@ function panel(title, html) {
   );
 }
 const product = (id) => state.products.find((p) => p.id === id)?.name || id;
+function recognition(p) {
+  const demo = state.mode === "demo";
+  return '<span class="badge ' + (!demo && p.scan_supported ? 'healthy' : 'pending') + '">' +
+    (demo ? 'Demo only' : p.scan_supported ? 'YOLO supported' : 'Manual review') + '</span>';
+}
+function productCards(products = state.products) {
+  if (!products.length) return '<p class="empty">No rice products match your search.</p>';
+  return '<div class="product-grid">' + products.map((p) =>
+    '<article class="rice-card"><div class="rice-card-top"><span class="rice-symbol" aria-hidden="true">▥</span>' + recognition(p) +
+    '</div><h3>' + esc(p.name) + '</h3><p class="muted">' + esc(p.sku) +
+    '</p><div class="stock-total">' + esc(p.quantity) + ' <span>sacks available</span></div>' +
+    '<p class="pack-details">' + esc(p.description || 'Verify pack size in product details.') + '</p>' +
+    btn('Edit product details', 'data-product="' + esc(p.id) + '"') + '</article>'
+  ).join('') + '</div>';
+}
+function scannerPanel() {
+  const scanner = state.scanner || {};
+  const demo = state.mode === 'demo';
+  const ready = !demo && scanner.ready;
+  return '<article class="panel scanner-panel"><div><p class="eyebrow">SCANNER CONNECTION</p><h2>' +
+    esc(demo ? 'Demonstration scanner' : scanner.name || 'Rice scanner') +
+    '</h2><p class="muted">' +
+    (demo ? 'Results are synthetic. Use the trained backend for real rice recognition.' :
+      ready ? 'The server model is ready. Products marked Manual review need checked quantities.' :
+      'The server has not confirmed a ready model. Check the backend model configuration.') +
+    '</p><p class="scanner-note">Capture → Check → Record · Reviewing an image never changes stock.</p></div>' +
+    '<span class="badge ' + (ready ? 'healthy' : 'pending') + '">' +
+    (demo ? 'Demo mode' : ready ? 'Server ready' : 'Needs attention') + '</span></article>';
+}
 const productTable = () =>
   table(state.products, [
     ["Rice product", "name"],
     ["SKU", "sku"],
-    ["Sack size", () => "25 kg"],
+    ["Pack details", (p) => esc(p.description || "Verify pack size")],
+    ["Recognition", (p) => recognition(p)],
     ["Available sacks", "quantity"],
     ["Stock version", "version"],
     ["", (p) => btn("Edit details", 'data-product="' + p.id + '"')],
@@ -138,7 +168,11 @@ function render() {
   if (!state) return;
   document
     .querySelectorAll("[data-page]")
-    .forEach((b) => b.classList.toggle("active", b.dataset.page === page));
+    .forEach((b) => {
+      b.classList.toggle("active", b.dataset.page === page);
+      if (b.dataset.page === page) b.setAttribute("aria-current", "page");
+      else b.removeAttribute("aria-current");
+    });
   const titles = {
     overview: "Inventory at a glance",
     inventory: "Rice products",
@@ -156,7 +190,7 @@ function render() {
       [
         "Available sacks",
         state.products.reduce((n, p) => n + p.quantity, 0),
-        "Three rice products  |  25 kg sacks",
+        state.products.length + " rice products · Stock tracked by sack",
       ],
       [
         "Awaiting inspection",
@@ -184,14 +218,15 @@ function render() {
         )
         .join("") +
       "</div>" +
-      panel("Available stock", productTable()) +
+      scannerPanel() +
+      panel("Rice inventory", productCards()) +
       panel("Recent stock movements", historyTable(state.history.slice(0, 8)));
   }
   if (page === "inventory")
     html = panel(
-      "Selected rice products",
+      "Rice inventory",
       '<p class="muted">Each sack counts as one unit. Stock changes through verified transactions and complete-count corrections.</p><label>Search rice product or SKU<input id="search" type="search"></label><div id="product-table">' +
-        productTable() +
+        productCards() +
         "</div>",
     );
   if (page === "actions")
@@ -278,7 +313,7 @@ function render() {
       ) +
       panel(
         "Create account",
-        '<form id="new-user"><label>Username<input name="username" required></label><label>Password<input name="password" type="password" minlength="12" maxlength="128" required></label><label>Role<select name="role"><option value="operator">Warehouse staff</option><option value="admin">Administrator / owner<class="primary">Create account</button></form>',
+        '<form id="new-user"><label>Username<input name="username" required></label><label>Password<input name="password" type="password" minlength="12" maxlength="128" required></label><label>Role<select name="role"><option value="operator">Warehouse staff</option><option value="admin">Administrator / owner</option></select></label><button class="primary">Create account</button></form>',
       );
   if (page === "security")
     html = panel(
@@ -288,14 +323,8 @@ function render() {
   $("content").innerHTML = html;
   $("search")?.addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
-    $("product-table").innerHTML = table(
-      state.products.filter((p) => (p.name + p.sku).toLowerCase().includes(q)),
-      [
-        ["Rice", "name"],
-        ["SKU", "sku"],
-        ["Available sacks", "quantity"],
-        ["", (p) => btn("Edit details", 'data-product="' + p.id + '"')],
-      ],
+    $("product-table").innerHTML = productCards(
+      state.products.filter((p) => (p.name + " " + p.sku).toLowerCase().includes(q)),
     );
   });
   $("new-user")?.addEventListener("submit", (e) => {
