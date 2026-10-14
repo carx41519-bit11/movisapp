@@ -57,6 +57,37 @@ class RiceTests(unittest.TestCase):
         self.r.finish(self.staff, self.complete(aid, full_counts={str(p): True for p in counts}, zero_confirmed={str(p): True for p in counts}))
         return aid
 
+    def test_busy_scanner_rejects_before_decode_and_keeps_stock(self):
+        aid = self.open()
+        self.s.scan_slots.acquire()
+        try:
+            with patch('PIL.Image.open') as decode:
+                with self.assertRaises(Error) as caught:
+                    self.r.image(self.staff, {'action_id': aid, 'image': self.photo})
+                self.assertEqual(caught.exception.status, 503)
+                decode.assert_not_called()
+        finally:
+            self.s.scan_slots.release()
+        self.assertEqual(self.action(aid)['images'], [])
+        self.assertEqual(self.stock(), [20, 20, 20])
+
+    def test_failed_scan_releases_admission_for_retry(self):
+        aid = self.open()
+        with self.assertRaises(Error):
+            self.r.image(self.staff, {'action_id': aid, 'image_id': 'bad',
+                                     'source': 'camera', 'zoom': 1, 'image': 'not-base64'})
+        self.image(aid, {1: 2})
+        self.assertEqual(len(self.action(aid)['images']), 1)
+        self.assertEqual(self.stock(), [20, 20, 20])
+
+    def test_foreign_action_rejected_before_image_decode(self):
+        aid = self.r.open(self.admin, self.req(kind='stock-in', products=[1]))['action_id']
+        with patch('PIL.Image.open') as decode:
+            with self.assertRaises(Error) as caught:
+                self.r.image(self.staff, {'action_id': aid, 'image': self.photo})
+            self.assertEqual(caught.exception.status, 404)
+            decode.assert_not_called()
+
     def test_multiple_images_deleted_excluded_and_retry(self):
         aid = self.open()
         for q in (4, 6, 5):

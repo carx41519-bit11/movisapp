@@ -43,7 +43,7 @@ class Application:
         if method=='GET' and path=='/health':
             # Also verifies that persistent storage is readable.
             with self.service.connection() as con:con.execute('SELECT count(*) FROM users').fetchone()
-            return 200,{'status':'ok','mode':self.service.mode,'version':'0.7.0'},'application/json'
+            return 200,{'status':'ok','mode':self.service.mode,'version':'0.8.0'},'application/json'
         if method not in ['GET','POST']:raise Error('Method not allowed',405)
         data={}
         if method=='POST':

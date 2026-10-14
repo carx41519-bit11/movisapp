@@ -71,20 +71,30 @@ class Service:
         self.db, self.mode = str(db), mode
         self.model = None
         self.model_lock = threading.Lock()
+        # Admit only one image decode/inference per process. Waiting requests
+        # otherwise retain large RGB buffers while competing for the same model.
+        self.scan_slots = threading.BoundedSemaphore(1)
         if mode == 'yolo':
             if not weights or not Path(weights).is_file():
                 raise Error('YOLO mode requires an existing warehouse-trained weights file')
+            print('MOVIS: importing inference runtime', flush=True)
+            import torch
+            torch.set_num_threads(max(1, min(4, int(os.environ.get('MOVIS_INFERENCE_THREADS', '1')))))
             from ultralytics import YOLO
+            print('MOVIS: loading verified detector', flush=True)
             self.model = YOLO(weights)
             if self.model.task != 'detect':
                 raise Error('MOVIS requires object-detection weights')
+            print('MOVIS: detector loaded', flush=True)
         elif mode != 'demo':
             raise Error('Mode must be demo or yolo')
+        print('MOVIS: initializing database', flush=True)
         database.initialize(self.db)
         if weights and Path(weights).is_file():
             self.weights_digest = hashlib.sha256(Path(weights).read_bytes()).hexdigest()
         from rice import RiceWorkflow
         self.rice = RiceWorkflow(self)
+        print('MOVIS: database ready', flush=True)
 
     @contextmanager
     def connection(self):

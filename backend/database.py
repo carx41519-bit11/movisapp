@@ -61,6 +61,9 @@ def connection(target):
         import psycopg
         with psycopg.connect(str(target), row_factory=record_factory, connect_timeout=15,
                              prepare_threshold=None) as raw:
+            # A locked schema or abandoned writer must not hang startup forever.
+            raw.execute("SELECT set_config('lock_timeout', '10000', false)")
+            raw.execute("SELECT set_config('statement_timeout', '30000', false)")
             try:
                 yield PostgresConnection(raw)
             except psycopg.IntegrityError as exc:

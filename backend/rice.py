@@ -173,6 +173,18 @@ class RiceWorkflow:
             return self.save(c, key, digest, {'action_id': aid})
 
     def image(self, user, data):
+        # Check account and action ownership before decoding untrusted images.
+        with self.s.connection() as c:
+            self.allowed(c, user)
+            self.action(c, user, required(data, 'action_id'))
+        if not self.s.scan_slots.acquire(blocking=False):
+            raise Error('Scanner is busy. Retry this photo shortly; stock is unchanged.', 503)
+        try:
+            return self._image(user, data)
+        finally:
+            self.s.scan_slots.release()
+
+    def _image(self, user, data):
         # Reserve IDs before inference so a delete wins even when inference returns late.
         aid, iid = required(data, 'action_id'), required(data, 'image_id')
         if data.get('source') != 'camera' or type(data.get('zoom')) is not int or data['zoom'] != 1:
@@ -184,9 +196,11 @@ class RiceWorkflow:
                 raise Error('Image must be between 1 byte and 6 MB')
             with Image.open(BytesIO(raw)) as src:
                 content_type = Image.MIME.get(src.format, 'application/octet-stream')
-                if src.width * src.height > 20000000:
-                    raise Error('Image exceeds 20 megapixels')
+                if src.width * src.height > 8000000:
+                    raise Error('Image exceeds 8 megapixels. Capture a smaller photo.')
+                src.seek(0)
                 picture = ImageOps.exif_transpose(src).convert('RGB')
+                picture.thumbnail((1600, 1600))
         except (ValueError, TypeError, OSError, UnidentifiedImageError, Image.DecompressionBombError):
             raise Error('Invalid image')
         ihash = hashlib.sha256(raw).hexdigest()
