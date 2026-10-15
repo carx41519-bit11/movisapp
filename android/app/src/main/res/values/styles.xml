@@ -1,11 +1,20 @@
 <resources>
     <style name="MovisBase" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#087F70</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorAccent">#171717</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F5F7FA</item>
+        <item name="android:statusBarColor">#F5F5F5</item>
         <item name="android:navigationBarColor">#FFFFFF</item>
         <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#F5F5F5</item>
+        <item name="android:colorControlHighlight">#18000000</item>
+        <item name="android:alertDialogTheme">@style/MovisDialog</item>
+    </style>
+    <style name="MovisDialog" parent="android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">#171717</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:windowMinWidthMajor">94%</item>
+        <item name="android:windowMinWidthMinor">94%</item>
     </style>
     <style name="MovisTheme" parent="MovisBase" />
 </resources>
