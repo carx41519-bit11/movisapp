@@ -17,6 +17,11 @@ PRODUCTS = [(1, 'RICE-SIN-25', 'Sinandomeng', 'sinandomeng'),
 KINDS = ('stock-in', 'stock-out', 'count', 'return', 'damage')
 
 
+def canonical_model_class(name):
+    """Map model label aliases to the existing product class."""
+    return {"magnolia_rice": "magnoliaRice"}.get(name, name)
+
+
 class RiceWorkflow:
     def __init__(self, service):
         self.s = service
@@ -33,7 +38,7 @@ class RiceWorkflow:
             # Preserve existing products. Register this model's distinct rice class
             # only when real Magnolia weights are actually loaded.
             names = getattr(service.model, 'names', {}) if service.model is not None else {}
-            classes = list(names.values()) if isinstance(names, dict) else list(names)
+            classes = [canonical_model_class(name) for name in (names.values() if isinstance(names, dict) else names)]
             if 'magnoliaRice' in classes and not c.execute('SELECT id FROM rice_products WHERE model_class=?', ('magnoliaRice',)).fetchone():
                 pid = c.execute('SELECT COALESCE(MAX(id),0)+1 FROM rice_products').fetchone()[0]
                 sku = 'RICE-MAGNOLIA'
@@ -44,7 +49,7 @@ class RiceWorkflow:
 
     def scanner_status(self, products):
         names = getattr(self.s.model, 'names', {}) if self.s.model is not None else {}
-        classes = list(names.values()) if isinstance(names, dict) else list(names)
+        classes = [canonical_model_class(name) for name in (names.values() if isinstance(names, dict) else names)]
         mapped = [p['model_class'] for p in products]
         return {'mode': self.s.mode,
                 'name': 'Magnolia Rice YOLO26n' if classes == ['magnoliaRice'] else 'Configured YOLO detector',
@@ -234,7 +239,7 @@ class RiceWorkflow:
                 with self.s.model_lock:
                     prediction = self.s.model.predict(picture, conf=.35, verbose=False)[0]
                 for box in prediction.boxes:
-                    cls = prediction.names[int(box.cls[0])]
+                    cls = canonical_model_class(prediction.names[int(box.cls[0])])
                     p = next((p for p in products if p['model_class'] == cls), None)
                     detections.append({'product_id': p['id'] if p else None, 'name': p['name'] if p else cls, 'class': cls, 'confidence': float(box.conf[0]), 'box': box.xyxyn[0].tolist()})
                 model = getattr(self.s, 'weights_digest', 'configured-yolo')
