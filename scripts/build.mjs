@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { python, run } from './python.mjs';
 run(python, ['-m', 'compileall', '-q', 'backend']);
 run(process.execPath, ['--check', 'web/dashboard.js']);
+run(process.execPath, ['--check', 'web/movements.js']);
 for (const file of ['web/index.html', 'web/styles.css', 'web/favicon.svg']) {
   if (!existsSync(file)) throw new Error(`Missing web asset: ${file}`);
 }

@@ -1,9 +1,9 @@
 <resources>
     <style name="MovisBase" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#087F70</item>
+        <item name="android:colorAccent">#247554</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F5F7FA</item>
+        <item name="android:statusBarColor">#F6F7F2</item>
         <item name="android:navigationBarColor">#FFFFFF</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>

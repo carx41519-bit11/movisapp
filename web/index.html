@@ -7,24 +7,25 @@
     <link rel="icon" href="/favicon.svg" />
     <link rel="stylesheet" href="/styles.css" />
     <script src="/dashboard.js" defer></script>
+    <script src="/movements.js" defer></script>
   </head>
   <body>
     <section id="login-view" class="login-layout">
       <div class="login-story">
-        <a class="brand" href="/"><span class="brand-mark">M</span>MOVIS</a>
+        <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>movis</a>
         <div class="login-copy">
           <p class="eyebrow">ELDER JAY RICE MILL</p>
-          <h1>Rice inventory,<br />clearly counted.</h1>
+          <h1>A clearer count.<br />A better workday.</h1>
           <p>
-            Capture. Check. Record.
-            Review verified rice movements and make every owner decision in one place.
+            Your rice, movements, and daily counts.
+            A connected workspace for the warehouse and the office.
           </p>
-        </div>
+        </div><p class="login-footer">MOVIS / INVENTORY &amp; WAREHOUSE OPERATIONS</p>
       </div>
       <div class="login-panel">
         <form id="login-form">
           <p class="eyebrow">ADMINISTRATOR WORKSPACE</p>
-          <h2>Welcome back</h2>
+          <h2>Welcome back.</h2><p class="form-intro">Sign in to your warehouse workspace.</p>
           <label for="username">Username</label
           ><input
             id="username"
@@ -47,7 +48,7 @@
     </section>
     <div id="app" hidden>
       <aside class="sidebar">
-        <a class="brand" href="/"><span class="brand-mark">M</span>MOVIS</a
+        <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>movis</a
         ><span class="sidebar-sub">ELDER JAY RICE MILL</span>
         <nav aria-label="Main navigation">
           <button class="nav active" data-page="overview">Overview</button
@@ -72,7 +73,7 @@
           </div>
           <div class="top-actions">
             <span id="last-updated"></span
-            ><button id="refresh" class="secondary">Refresh</button>
+            ><button id="refresh" class="secondary">Refresh</button><button id="stock-in" class="primary">+ Stock in</button><button id="stock-out" class="dispatch">- Stock out</button>
           </div>
         </header>
         <div id="demo-banner" class="notice" hidden>
@@ -80,9 +81,10 @@
           model is required for real scanning.
         </div>
         <p id="app-error" class="error" role="alert"></p>
-        <section id="content" aria-label="Workspace"></section>
+        <div id="preview-banner" class="notice preview-notice" hidden>LOCAL DESIGN PREVIEW <span>Sample records / no production inventory</span></div><section id="content" aria-label="Workspace"></section>
       </main>
     </div>
+    <p id="toast" class="toast" role="status" hidden></p>
     <dialog id="detail">
       <button id="close-detail" class="secondary">Close</button>
       <div id="detail-content"></div>
