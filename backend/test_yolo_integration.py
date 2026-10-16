@@ -1,4 +1,4 @@
-"""Real Magnolia weights must map detections without silently changing stock."""
+"""Real two-class weights must map detections without silently changing stock."""
 import base64
 import importlib.util
 import json
@@ -6,6 +6,7 @@ import os
 import tempfile
 import unittest
 import uuid
+from types import SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -45,7 +46,8 @@ class MagnoliaIntegrationTests(unittest.TestCase):
     def test_model_identity_and_existing_products_are_preserved(self):
         scanner = self.state['scanner']
         self.assertTrue(scanner['ready'])
-        self.assertEqual(scanner['classes'], ['magnoliaRice'])
+        self.assertEqual(scanner['classes'], ['buko_pandan', 'magnoliaRice'])
+        self.assertTrue(self.state['products'][2]['scan_supported'])
         self.assertEqual(scanner['sha256'], json.loads((ROOT / 'models/model.json').read_text())['sha256'])
         self.assertEqual([(p['id'], p['model_class']) for p in self.state['products'][:3]],
                          [(1, 'sinandomeng'), (2, 'jasmine'), (3, 'buko_pandan')])
@@ -75,6 +77,37 @@ class MagnoliaIntegrationTests(unittest.TestCase):
         result = self.r.submit(self.user, request)
         self.assertEqual(self.r.submit(self.user, request), result)
         self.assertEqual(self.r.state(self.user)['products'][-1]['quantity'], 1)
+
+    def test_two_class_predictions_map_to_existing_products_without_changing_stock(self):
+        import numpy as np
+        buko = self.state['products'][2]
+        with self.s.connection() as c:
+            c.execute('UPDATE rice_products SET quantity=17 WHERE id=?', (buko['id'],))
+        aid = self.r.open(self.user, self.req(kind='stock-in', products=[buko['id'], self.pid]))['action_id']
+        prediction = SimpleNamespace(names=self.model.names, boxes=[
+            SimpleNamespace(cls=[0], conf=[.9], xyxyn=np.array([[.1, .1, .4, .5]])),
+            SimpleNamespace(cls=[1], conf=[.8], xyxyn=np.array([[.5, .1, .9, .5]])),
+        ])
+        with patch.object(self.model, 'predict', return_value=[prediction]):
+            self.r.image(self.user, {'action_id': aid, 'image_id': 'both-products', 'source': 'camera',
+                                    'zoom': 1, 'image': base64.b64encode(PHOTO.read_bytes()).decode()})
+        detections = self.r.state(self.user, aid)['action']['images'][0]['raw']
+        self.assertEqual([(d['product_id'], d['class']) for d in detections],
+                         [(buko['id'], 'buko_pandan'), (self.pid, 'magnoliaRice')])
+        with patch('ultralytics.YOLO', return_value=self.model):
+            restarted = Service(self.path, 'yolo', WEIGHTS)
+        products = restarted.rice.state(self.user)['products']
+        self.assertEqual(len(products), 4)
+        self.assertEqual(products[2]['quantity'], 17)
+        self.assertEqual(products[-1]['quantity'], 0)
+
+    def test_android_and_render_expect_the_bundled_model(self):
+        manifest = json.loads((ROOT / 'models/model.json').read_text())
+        android = json.loads((ROOT / 'android/app/src/main/assets/scanner_model.json').read_text())
+        self.assertEqual(manifest, android)
+        self.assertEqual(manifest['classes'], list(self.model.names.values()))
+        self.assertEqual(manifest['sha256'], self.s.weights_digest)
+        self.assertIn('value: ' + manifest['sha256'], (ROOT / 'render.yaml').read_text())
 
     def test_four_products_can_be_reviewed_and_admin_updated(self):
         products = self.state['products']

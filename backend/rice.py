@@ -19,7 +19,7 @@ KINDS = ('stock-in', 'stock-out', 'count', 'return', 'damage')
 
 def canonical_model_class(name):
     """Map model label aliases to the existing product class."""
-    return {"magnolia_rice": "magnoliaRice"}.get(name, name)
+    return {"magnolia_rice": "magnoliaRice", "bukopandan_rice": "buko_pandan"}.get(name, name)
 
 
 class RiceWorkflow:
@@ -52,7 +52,8 @@ class RiceWorkflow:
         classes = [canonical_model_class(name) for name in (names.values() if isinstance(names, dict) else names)]
         mapped = [p['model_class'] for p in products]
         return {'mode': self.s.mode,
-                'name': 'Magnolia Rice YOLO26n' if classes == ['magnoliaRice'] else 'Configured YOLO detector',
+                'name': ('Buko Pandan and Magnolia Rice YOLO26n' if set(classes) == {'buko_pandan', 'magnoliaRice'}
+                         else 'Magnolia Rice YOLO26n' if classes == ['magnoliaRice'] else 'Configured YOLO detector'),
                 'classes': classes, 'sha256': getattr(self.s, 'weights_digest', ''),
                 'confidence': .35, 'execution': 'backend',
                 'ready': self.s.mode == 'yolo' and bool(classes) and all(x in mapped for x in classes),

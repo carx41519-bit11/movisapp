@@ -1,4 +1,4 @@
-# MOVIS 0.8 — Warehouse operations
+# MOVIS 0.8.3 — Warehouse operations
 
 Android staff app and Python backend for Elder Jay Rice Mill. Three main screens:
 Inventory, Tasks, and Activity. Returns and damage inspections are inside Tasks.
@@ -16,16 +16,16 @@ gradlew assembleDebug
 gradlew assembleRelease lintRelease
 ```
 
-Version 0.8.0 (8); Android 8.0 minimum. Configure production signing privately in
+Version 0.8.3 (11); Android 8.0 minimum. Configure production signing privately in
 android/keystore.properties. Never commit signing keys or passwords.
 The delivered internal-test APK uses a development certificate.
 
 ## Model
 
-models/best.pt is the new YOLO26n detector for magnoliaRice. Its SHA256 is:
+models/best.pt is the YOLO26n detector for Buko Pandan and Magnolia rice, trained at 640 pixels. Its raw labels `bukopandan_rice` and `magnolia_rice` map to the existing product classes `buko_pandan` and `magnoliaRice`. Its SHA256 is:
 
 ```
-b9d4bddf0a595c9a597990435c9f204b041d2e49888f04ce4cac8af8056fb33f
+a9c52df8fa40ab14501ae36b9f17be34129eee896fd32202b5dd6276e425b2ce
 ```
 
 models/model.json and android/app/src/main/assets/scanner_model.json identify
@@ -35,7 +35,7 @@ products use manually verified quantities. Inference runs on the backend.
 ## Backend
 
 Use Dockerfile.yolo from the repository root. Keep existing private Neon
-connection and storage settings. See [the update guide](deploy/UPDATE-0.8.md).
+connection and storage settings. See [the update guide](deploy/UPDATE-0.8.3.md).
 No database reset is needed for this update.
 
 ```
