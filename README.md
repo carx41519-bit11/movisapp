@@ -1,4 +1,4 @@
-# MOVIS 0.8.3 — Warehouse operations
+# MOVIS 1.0.0 — Warehouse operations
 
 Android staff app and Python backend for Elder Jay Rice Mill. Three main screens:
 Inventory, Tasks, and Activity. Returns and damage inspections are inside Tasks.
@@ -16,7 +16,7 @@ gradlew assembleDebug
 gradlew assembleRelease lintRelease
 ```
 
-Version 0.8.3 (11); Android 8.0 minimum. Configure production signing privately in
+Version 1.0.0 (100); Android 8.0 minimum. Configure production signing privately in
 android/keystore.properties. Never commit signing keys or passwords.
 The delivered internal-test APK uses a development certificate.
 
@@ -29,13 +29,12 @@ a9c52df8fa40ab14501ae36b9f17be34129eee896fd32202b5dd6276e425b2ce
 ```
 
 models/model.json and android/app/src/main/assets/scanner_model.json identify
-these weights. The camera requires a matching, ready server model. Other rice
-products use manually verified quantities. Inference runs on the backend.
+these weights. Smart counting requires a matching, ready server model. Manual photo counts remain available when smart counting is unavailable. Website stock-in/out uses administrator-verified photo evidence. Inference runs on the backend.
 
 ## Backend
 
 Use Dockerfile.yolo from the repository root. Keep existing private Neon
-connection and storage settings. See [the update guide](deploy/UPDATE-0.8.3.md).
+connection and storage settings. See [the update guide](deploy/UPDATE-1.0.0.md).
 No database reset is needed for this update.
 
 ```

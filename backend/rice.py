@@ -193,8 +193,13 @@ class RiceWorkflow:
     def _image(self, user, data):
         # Reserve IDs before inference so a delete wins even when inference returns late.
         aid, iid = required(data, 'action_id'), required(data, 'image_id')
-        if data.get('source') != 'camera' or type(data.get('zoom')) is not int or data['zoom'] != 1:
+        source = data.get('source')
+        if source == 'upload' and user['role'] != 'admin':
+            raise Error('Only administrators may attach warehouse photo evidence from the website', 403)
+        if source not in ('camera', 'upload') or type(data.get('zoom')) is not int or data['zoom'] != 1:
             raise Error('Use a new MOVIS rear-camera image at 1x')
+        if type(data.get('manual_only', False)) is not bool:
+            raise Error('Select a valid photo counting mode')
         from PIL import Image, ImageOps, UnidentifiedImageError
         try:
             raw = base64.b64decode(data.get('image', ''), validate=True)
@@ -232,7 +237,10 @@ class RiceWorkflow:
         start = time.perf_counter()
         detections = []
         try:
-            if self.s.mode == 'demo':
+            if data.get('manual_only') is True:
+                # Evidence remains mandatory; quantities must be reviewed explicitly.
+                model = 'manual-verified-photo'
+            elif self.s.mode == 'demo':
                 for p in products:
                     detections.append({'product_id': p['id'], 'name': p['name'], 'class': p['model_class'], 'confidence': .9, 'box': [.1, .1, .4, .4]})
                 model = 'synthetic-demo'
@@ -487,5 +495,5 @@ class RiceWorkflow:
             pid = integer(data.get('product_id'), 1)
             if not c.execute('SELECT id FROM rice_products WHERE id=?', (pid,)).fetchone():
                 raise Error('Rice product not found', 404)
-            c.execute('UPDATE rice_products SET sku=?,description=?,model_class=? WHERE id=?', (required(data, 'sku'), required(data, 'description'), required(data, 'model_class'), pid))
+            c.execute('UPDATE rice_products SET sku=?,description=?,model_class=? WHERE id=?', (required(data, 'sku'), required(data, 'description'), canonical_model_class(required(data, 'model_class')), pid))
             return {'message': 'Product details updated'}

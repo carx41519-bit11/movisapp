@@ -43,7 +43,7 @@ async function api(path, data) {
     out = JSON.parse(text);
   } catch {
     throw Error(
-      `The server returned an unexpected response (HTTP ${r.status}). Please try again shortly. If this continues, check the Render logs.`,
+      `The service is temporarily unavailable (HTTP ${r.status}). Your stock has not been resubmitted. Try refreshing shortly.`,
     );
   }
   if (!r.ok) {
@@ -125,12 +125,12 @@ const product = (id) => state.products.find((p) => p.id === id)?.name || id;
 function recognition(p) {
   const demo = state.mode === "demo";
   return '<span class="badge ' + (!demo && p.scan_supported ? 'healthy' : 'pending') + '">' +
-    (demo ? 'Demo only' : p.scan_supported ? 'YOLO supported' : 'Manual review') + '</span>';
+    (demo ? 'Demo only' : p.scan_supported ? 'Smart count' : 'Manual review') + '</span>';
 }
 function productCards(products = state.products) {
   if (!products.length) return '<p class="empty">No rice products match your search.</p>';
   return '<div class="product-grid">' + products.map((p) =>
-    '<article class="rice-card"><div class="rice-card-top"><span class="rice-symbol" aria-hidden="true">â–¥</span>' + recognition(p) +
+    '<article class="rice-card"><div class="rice-card-top"><span class="rice-symbol" aria-hidden="true"><svg viewBox="0 0 32 36" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3h16l-3 7c5 6 7 12 6 20-6 3-16 3-22 0-1-8 1-14 6-20zM10 10h12M16 16v11m-5-9 5 4 5-4"/></svg></span>' + recognition(p) +
     '</div><h3>' + esc(p.name) + '</h3><p class="muted">' + esc(p.sku) +
     '</p><div class="stock-total">' + esc(p.quantity) + ' <span>sacks available</span></div>' +
     '<p class="pack-details">' + esc(p.description || 'Verify pack size in product details.') + '</p>' +
@@ -142,12 +142,12 @@ function scannerPanel() {
   const demo = state.mode === 'demo';
   const ready = !demo && scanner.ready;
   return '<article class="panel scanner-panel"><div><p class="eyebrow">SCANNER CONNECTION</p><h2>' +
-    esc(demo ? 'Demonstration scanner' : scanner.name || 'Rice scanner') +
+    esc(demo ? 'Demonstration scanner' : ready ? 'Smart counting is ready' : 'Smart counting needs attention') +
     '</h2><p class="muted">' +
     (demo ? 'Results are synthetic. Use the trained backend for real rice recognition.' :
       ready ? 'The server model is ready. Products marked Manual review need checked quantities.' :
       'The server has not confirmed a ready model. Check the backend model configuration.') +
-    '</p><p class="scanner-note">Capture â†’ Check â†’ Record Â· Reviewing an image never changes stock.</p></div>' +
+    '</p><p class="scanner-note">Capture / Verify / Record | Reviewing an image never changes stock.</p></div>' +
     '<span class="badge ' + (ready ? 'healthy' : 'pending') + '">' +
     (demo ? 'Demo mode' : ready ? 'Server ready' : 'Needs attention') + '</span></article>';
 }
@@ -165,9 +165,9 @@ const historyTable = (rows) =>
   table(rows, [
     ["Time", (r) => esc(stamp(r.created_at))],
     ["Rice product", "name"],
-    ["Action", "kind"],
+    ["Action", (r) => '<span class="badge ' + (r.kind === "stock-in" ? "healthy" : r.kind === "stock-out" ? "outgoing" : "") + '">' + esc(movementLabel(r.kind)) + '</span>'],
     ["Previous", "previous_quantity"],
-    ["Change", "difference"],
+    ["Change", (r) => '<span class="' + (r.difference >= 0 ? "positive" : "negative") + '">' + (r.difference > 0 ? "+" : "") + esc(r.difference) + '</span>'],
     ["New stock", "quantity"],
     ["Account", "username"],
     ["Reason", "reason"],
@@ -182,7 +182,7 @@ function render() {
       else b.removeAttribute("aria-current");
     });
   const titles = {
-    overview: "Inventory at a glance",
+    overview: "Your warehouse, in clear view.",
     inventory: "Rice products",
     actions: "Scans and inventory counts",
     cases: "Owner inspection and decisions",
@@ -198,17 +198,17 @@ function render() {
       [
         "Available sacks",
         state.products.reduce((n, p) => n + p.quantity, 0),
-        state.products.length + " rice products Â· Stock tracked by sack",
+        state.products.length + " products | Verified stock balances",
       ],
       [
-        "Awaiting inspection",
-        state.cases.filter((c) => c.remaining > 0).length,
-        "Owner decision required",
+        "Recent sacks received",
+        recentMovement("stock-in"),
+        "From the latest 1,000 stock movements",
       ],
       [
-        "Open actions",
-        state.actions.filter((a) => a.state === "open").length,
-        "Scans have not changed stock",
+        "Recent sacks dispatched",
+        recentMovement("stock-out"),
+        "From the latest 1,000 stock movements",
       ],
     ];
     html =
@@ -228,7 +228,7 @@ function render() {
       "</div>" +
       scannerPanel() +
       panel("Rice inventory", productCards()) +
-      panel("Recent stock movements", historyTable(state.history.slice(0, 8)));
+      panel("Recent stock movements", movementFilters() + historyTable(filteredHistory().slice(0, 8)));
   }
   if (page === "inventory")
     html = panel(
@@ -291,7 +291,7 @@ function render() {
   if (page === "history")
     html = panel(
       "Stock-in, stock-out and corrections",
-      btn("Export CSV", 'id="export"') + historyTable(state.history),
+      movementFilters() + btn("Export CSV", 'id="export"') + historyTable(filteredHistory()),
     );
   if (page === "reports")
     html = panel(
@@ -329,6 +329,7 @@ function render() {
       '<form id="security"><label>Current password<input name="current_password" type="password" required></label><label>New password<input name="new_password" type="password" minlength="12" maxlength="128" required></label><label>Confirm new password<input name="confirm" type="password" required></label><p class="muted">Changing your password signs out all devices using this account.</p><button class="primary">Change password</button></form>',
     );
   $("content").innerHTML = html;
+  $("movement-filter")?.addEventListener("change", e => { historyFilter = e.target.value; render(); });
   $("search")?.addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
     $("product-table").innerHTML = productCards(
@@ -396,7 +397,7 @@ async function downloadReport(kind, format) {
 function dialog(title, html) {
   $("detail-content").innerHTML =
     "<h2>" + esc(title) + "</h2>" + html + '<p class="error" role="alert"></p>';
-  $("detail").showModal();
+  if (!$("detail").open) $("detail").showModal();
 }
 $("content").addEventListener("click", (e) => {
   const b = e.target.closest("button");
@@ -441,6 +442,8 @@ $("content").addEventListener("click", (e) => {
             )
             .join("") +
           '<label>Reason<input name="reason" required></label><button class="primary">Confirm adjustment</button></form>';
+      if (a.state === "open" && ["stock-in", "stock-out"].includes(a.kind))
+        html += '<form id="resume-movement"><h3>Continue this movement</h3><p class="muted">Every retained photo must be reviewed before submission. You can review unverified photos in the Android app.</p><label>Movement reason / reference<input name="reason" maxlength="500" required></label><button class="primary">Review stock balances</button></form>';
       for (const im of a.images) {
         html +=
           '<article class="panel"><h3>' +
@@ -454,16 +457,13 @@ $("content").addEventListener("click", (e) => {
               '"></a>'
             : "") +
           "<p>" +
-          esc(im.model_version) +
+          (im.model_version === 'manual-verified-photo' ? 'Manual photo count' : 'Photo with model suggestions') +
           "  |  " +
-          esc(im.processing_ms) +
-          " ms  |  " +
           (im.reviewed ? "Checked" : "Unchecked") +
           "</p>" +
           table(im.raw, [
-            ["Raw rice", "name"],
+            ["Detected rice", "name"],
             ["Confidence", (x) => esc(Math.round(x.confidence * 100) + "%")],
-            ["Box", (x) => esc(JSON.stringify(x.box))],
           ]) +
           table(im.checked, [
             ["User checked rice", (x) => esc(product(x.product_id))],
@@ -472,6 +472,21 @@ $("content").addEventListener("click", (e) => {
           "</article>";
       }
       dialog("Review action and scan evidence", html);
+      $("resume-movement")?.addEventListener("submit", ev => {
+        ev.preventDefault();
+        const reason = String(new FormData(ev.currentTarget).get("reason")).trim();
+        run(async () => {
+          const fresh = await api('/v2/state?action_id=' + encodeURIComponent(a.id));
+          const kept = fresh.action.images.filter(im => !im.deleted);
+          if (!kept.length || kept.some(im => !im.reviewed)) throw Error('Review all retained photos in the Android app before submitting this movement.');
+          const quantities = new Map();
+          kept.forEach(im => im.checked.forEach(line => quantities.set(line.product_id,(quantities.get(line.product_id)||0)+line.quantity)));
+          const rows = [...quantities].map(([product_id,quantity]) => ({product_id,quantity})).filter(row => row.quantity>0);
+          if (!rows.length) throw Error('This movement has no verified sacks to submit.');
+          movementDraft = {aid:a.id,kind:a.kind,rows,reason,products:fresh.products,revision:fresh.action.revision,submitId:newRequestId()};
+          showMovementConfirmation();
+        });
+      });
       $("adjust")?.addEventListener("submit", (ev) => {
         ev.preventDefault();
         run(async () => {
@@ -659,6 +674,7 @@ setInterval(() => {
   }
   if (!$("detail").open && ["overview", "history"].includes(page)) run(refresh);
 }, 15000);
+document.addEventListener("DOMContentLoaded", () => {
 run(async () => {
   try {
     await refresh();
@@ -666,4 +682,6 @@ run(async () => {
     if (e.message !== "Please sign in again")
       $("login-error").textContent = e.message;
   }
+});
+
 });

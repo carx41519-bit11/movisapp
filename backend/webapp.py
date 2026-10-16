@@ -15,7 +15,7 @@ from service import Service, Error
 MAX_BODY = 9 * 1024 * 1024
 WEB_DIR = Path(__file__).resolve().parent.parent / 'web'
 STATIC = {'/':('index.html','text/html'), '/index.html':('index.html','text/html'),
-          '/dashboard.js':('dashboard.js','text/javascript'), '/styles.css':('styles.css','text/css'),
+          '/dashboard.js':('dashboard.js','text/javascript'), '/movements.js':('movements.js','text/javascript'), '/styles.css':('styles.css','text/css'),
           '/favicon.svg':('favicon.svg','image/svg+xml')}
 
 
@@ -43,7 +43,7 @@ class Application:
         if method=='GET' and path=='/health':
             # Also verifies that persistent storage is readable.
             with self.service.connection() as con:con.execute('SELECT count(*) FROM users').fetchone()
-            return 200,{'status':'ok','mode':self.service.mode,'version':'0.8.3'},'application/json'
+            return 200,{'status':'ok','mode':self.service.mode,'version':'1.0.0'},'application/json'
         if method not in ['GET','POST']:raise Error('Method not allowed',405)
         data={}
         if method=='POST':
