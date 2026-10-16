@@ -1,11 +1,13 @@
 {
-  "name": "Magnolia Rice YOLO26n",
+  "name": "Buko Pandan and Magnolia Rice YOLO26n",
   "file": "best.pt",
-  "sha256": "b3497135013aeeafa9505f561ee6749f04c98e11d2555ebec10e1683c6550e64",
+  "sha256": "a9c52df8fa40ab14501ae36b9f17be34129eee896fd32202b5dd6276e425b2ce",
   "classes": [
-    "magnoliaRice"
+    "bukopandan_rice",
+    "magnolia_rice"
   ],
   "confidence": 0.35,
   "execution": "backend",
-  "training_epochs": 97
+  "training_image_size": 640,
+  "training_epochs": 94
 }

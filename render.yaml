@@ -21,4 +21,4 @@ services:
       - key: MOVIS_WEIGHTS
         value: /app/models/best.pt
       - key: MOVIS_WEIGHTS_SHA256
-        value: b3497135013aeeafa9505f561ee6749f04c98e11d2555ebec10e1683c6550e64
+        value: a9c52df8fa40ab14501ae36b9f17be34129eee896fd32202b5dd6276e425b2ce
