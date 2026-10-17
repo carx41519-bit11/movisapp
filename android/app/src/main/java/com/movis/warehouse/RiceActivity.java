@@ -193,7 +193,7 @@ public class RiceActivity extends Activity {
         });
         p.setOnEditorActionListener((v,id,event)->{if(id==android.view.inputmethod.EditorInfo.IME_ACTION_DONE){submit.performClick();return true;}return false;});
         TextView help=muted(body,"Need access? Contact your warehouse administrator.");help.setGravity(Gravity.CENTER);
-        TextView version=muted(body,"MOVIS 1.0.0 \u00b7 Secure warehouse operations");version.setTextSize(11);version.setGravity(Gravity.CENTER);version.setPadding(0,dp(24),0,0);
+        TextView version=muted(body,"MOVIS 1.0.1 \u00b7 Secure warehouse operations");version.setTextSize(11);version.setGravity(Gravity.CENTER);version.setPadding(0,dp(24),0,0);
     }
     void load(){task(()->api("/v2/state",null),r->{state=r;updatedAt=java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"));home(page);});}
     String name(int id){JSONArray p=arr(state,"products");for(int i=0;i<p.length();i++)if(p.optJSONObject(i).optInt("id")==id)return p.optJSONObject(i).optString("name");return "Rice "+id;}

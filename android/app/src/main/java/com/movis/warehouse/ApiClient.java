@@ -25,7 +25,8 @@ final class ApiClient {
         HttpURLConnection c = (HttpURLConnection) new URL(SERVER + path).openConnection();
         c.setInstanceFollowRedirects(false);
         c.setConnectTimeout(path.equals("/logout") ? 5000 : 20000);
-        c.setReadTimeout(path.equals("/logout") ? 5000 : 90000);
+        // Allow the free server to finish its first YOLO request after waking.
+        c.setReadTimeout(path.equals("/logout") ? 5000 : 180000);
         c.setRequestProperty("Accept", "application/json");
         if(path.startsWith("/v2/")){
             if(data!=null)c.setRequestProperty("X-Movis-State", "action");
